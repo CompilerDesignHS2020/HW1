@@ -327,8 +327,9 @@ let quadrupled_z_again : int = twice double z  (* pass double to twice *)
 let pieces : int = -1
 
 (* Implement a function cube that takes an int value and produces its cube. *)
-let cube : int -> int =
-	fun _ -> failwith "cube unimplemented"
+let cube :int -> int = 
+
+  fun x:int -> x*x
 
 
 (* Problem 1-2 *)
