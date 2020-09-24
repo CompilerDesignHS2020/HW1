@@ -324,12 +324,12 @@ let quadrupled_z_again : int = twice double z  (* pass double to twice *)
   makes the first case of part1_tests "Problem 1" succeed. See the
   gradedtests.ml file.
 *)
-let pieces : int = -1
+let pieces : int = 8
 
 (* Implement a function cube that takes an int value and produces its cube. *)
 let cube :int -> int = 
 
-  fun x:int -> x*x
+  fun x -> x * x * x;;
 
 
 (* Problem 1-2 *)
@@ -341,7 +341,7 @@ let cube :int -> int =
   and computes the total value in centimes:
 *)
 let centimes_of : int -> int -> int =
-  fun _ -> failwith "centimes_of unimplemented"
+  fun rp fr -> rp + fr * 100;;
 
 
 (* Problem 1-3 *)
@@ -497,8 +497,11 @@ let pair_up (x:'a) : ('a * 'a) = (x, x)
   Complete the definition of third_of_three; be sure to give it
   the correct type signature:
 *)
-let third_of_three _ = failwith
-  "third_of_three unimplemented"
+let third_of_three (t:'a * 'b * 'c) : 'c =
+  begin match t with
+    | (_,_,x) -> x
+  end
+  
 
 
 (*
