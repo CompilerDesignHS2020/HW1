@@ -106,8 +106,8 @@ let another_int : int = 3 * 14
 (* bind z to the value 39 *)
 let z : int =
   let x = 3 in
-    let y = x + x in  (* x is in scope here *)
-      y * y + x       (* x and y are both in scope here *)
+  let y = x + x in  (* x is in scope here *)
+  y * y + x       (* x and y are both in scope here *)
 
 (*
   Scoping is sometimes easier to see by writing (optional) 'begin'-'end'
@@ -117,7 +117,7 @@ let z : int =
 let z : int =
   let x = 3 in begin
     let y = x + x in begin
-	y * y + x
+      y * y + x
     end
   end
 
@@ -501,7 +501,7 @@ let third_of_three (t:'a * 'b * 'c) : 'c =
   begin match t with
     | (_,_,x) -> x
   end
-  
+
 
 
 (*
@@ -514,7 +514,8 @@ let third_of_three (t:'a * 'b * 'c) : 'c =
 *)
 
 let compose_pair (p:(('b -> 'c) * ('a -> 'b))) : 'a -> 'c =
-  failwith "compose_pair unimplemented"
+  let (first, second) = p in
+  fun x -> first (second x) 
 
 
 
@@ -546,7 +547,7 @@ let list1' = [3;2;1]     (* this is equivalent to list1 *)
 
 (* Lists are homogeneous -- they hold values of only one type: *)
 (* Uncomment to get a type error; recomment to compile:
-let bad_list = [1;"hello";true]
+   let bad_list = [1;"hello";true]
 *)
 
 
@@ -639,7 +640,7 @@ let rec is_sorted (l:'a list) : bool =
     | []    -> true
     | _::[] -> true
     | h1::h2::tl ->
-        h1 < h2 && (is_sorted (h2::tl))
+      h1 < h2 && (is_sorted (h2::tl))
   end
 
 let is_sorted_ans1 : bool = is_sorted [1;2;3]    (* true *)
@@ -688,7 +689,10 @@ let rec mylist_to_list (l:'a mylist) : 'a list =
   the inverse of the mylist_to_list function given above.
 *)
 let rec list_to_mylist (l:'a list) : 'a mylist =
-  failwith "list_to_mylist unimplemented"
+  begin match l with
+    | [] -> Nil
+    | h::tl -> Cons (h, (list_to_mylist tl))
+  end
 
 
 (*
@@ -705,7 +709,10 @@ let rec list_to_mylist (l:'a list) : 'a mylist =
   append.  So (List.append [1;2] [3]) is the same as  ([1;2] @ [3]).
 *)
 let rec append (l1:'a list) (l2:'a list) : 'a list =
-  failwith "append unimplemented"
+  begin match l2 with
+    | [] -> l1
+    | h::tl -> h::(append l1 tl)
+  end
 
 (*
   Problem 3-3
@@ -714,7 +721,9 @@ let rec append (l1:'a list) (l2:'a list) : 'a list =
   you might want to call append.  Do not use the library function.
 *)
 let rec rev (l:'a list) : 'a list =
-  failwith "rev unimplemented"
+  match l with
+  | [] -> []
+  | h::tl -> (rev tl) @ [h]
 
 (*
   Problem 3-4
@@ -726,9 +735,10 @@ let rec rev (l:'a list) : 'a list =
   OCaml will compile a tail recursive function to a simple loop.
 *)
 let rev_t (l: 'a list) : 'a list =
-  let rec rev_aux l acc =
+  let rec rev_aux (l: 'a list) (acc: 'a list) =
     begin match l with
-      | _ -> failwith "rev_t unimplemented"
+      | [] -> acc
+      | h::tl -> rev_aux (tl) (h::acc)
     end
   in
   rev_aux l []
@@ -748,7 +758,13 @@ let rev_t (l: 'a list) : 'a list =
   evaluates to true or false.
 *)
 let rec insert (x:'a) (l:'a list) : 'a list =
-  failwith "insert unimplemented"
+  match l with
+  | [] -> [x]
+  | h::tl -> if h>x then 
+      x::h::tl 
+    else if h=x then
+      l
+    else h::(insert x tl)
 
 
 (*
@@ -773,23 +789,23 @@ let rec union (l1:'a list) (l2:'a list) : 'a list =
 
 (* TERMINOLOGY: "Object" level vs. "Meta" level
 
-  When we implement a compiler, we use code in one programming language to
-  implement the features of another language.  The language we are implementing
-  is called the "object language" -- it is the "object of study".  In contrast,
-  the language we use to implement the object language in is called the
-  "meta language" -- it is used to "talk about" the object language.  In this
-  course OCaml will usually be the "meta language" (indeed the 'm' and 'l' in
-  OCaml come from ML - meta language).
+   When we implement a compiler, we use code in one programming language to
+   implement the features of another language.  The language we are implementing
+   is called the "object language" -- it is the "object of study".  In contrast,
+   the language we use to implement the object language in is called the
+   "meta language" -- it is used to "talk about" the object language.  In this
+   course OCaml will usually be the "meta language" (indeed the 'm' and 'l' in
+   OCaml come from ML - meta language).
 
-  We will implement several different object languages in this course.  Within
-  the metalanguage, we use ordinary datatypes: lists, tuples, trees, unions,etc.
-  to represent the features of the object language.  A compiler is just a
-  function that translates one representation of an object language into
-  another (usually while preserving some notion of a program's 'behavior').
+   We will implement several different object languages in this course.  Within
+   the metalanguage, we use ordinary datatypes: lists, tuples, trees, unions,etc.
+   to represent the features of the object language.  A compiler is just a
+   function that translates one representation of an object language into
+   another (usually while preserving some notion of a program's 'behavior').
 
-  The representation of a language is often best done using an "abstract syntax
-  tree" -- a representation that hides concrete details about parsing,
-  infix syntax, syntactic sugar, etc.
+   The representation of a language is often best done using an "abstract syntax
+   tree" -- a representation that hides concrete details about parsing,
+   infix syntax, syntactic sugar, etc.
 *)
 
 (*
