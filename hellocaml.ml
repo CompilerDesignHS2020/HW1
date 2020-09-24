@@ -775,7 +775,9 @@ let rec insert (x:'a) (l:'a list) : 'a list =
   Hint: you might want to use the insert function that you just defined.
 *)
 let rec union (l1:'a list) (l2:'a list) : 'a list =
-  failwith "union unimplemented"
+  match l2 with
+  | [] -> l1
+  | h::tl -> union (insert h l1) tl
 
 
 
