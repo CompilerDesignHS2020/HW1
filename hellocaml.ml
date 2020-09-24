@@ -709,9 +709,9 @@ let rec list_to_mylist (l:'a list) : 'a mylist =
   append.  So (List.append [1;2] [3]) is the same as  ([1;2] @ [3]).
 *)
 let rec append (l1:'a list) (l2:'a list) : 'a list =
-  begin match l2 with
-    | [] -> l1
-    | h::tl -> h::(append l1 tl)
+  begin match l1 with
+    | [] -> l2
+    | h::tl -> h::(append tl l2)
   end
 
 (*
@@ -868,7 +868,12 @@ let e3 : exp = Mult(Var "y", Mult(e2, Neg e2))     (* "y * ((x+1) * -(x+1))" *)
   Hint: you probably want to use the 'union' function you wrote for Problem 3-5.
 *)
 let rec vars_of (e:exp) : string list =
-  failwith "vars_of unimplemented"
+  match e with
+  | Var s -> [s]
+  | Const c-> []
+  | Add (a1, a2)-> union (vars_of a1) (vars_of a2)
+  | Mult (m1, m2)-> union (vars_of m1) (vars_of m2)
+  | Neg n -> vars_of n
 
 
 (*
@@ -887,7 +892,12 @@ let rec vars_of (e:exp) : string list =
 *)
 
 let rec string_of (e:exp) : string =
-  failwith "string_of unimplemented"
+  match e with
+  | Var s -> s
+  | Const c-> Int64.to_string c
+  | Add (a1, a2)-> "(" ^ string_of a1 ^ " + " ^ string_of a2 ^ ")"
+  | Mult (m1, m2)-> "(" ^ string_of m1 ^ " * " ^ string_of m2 ^ ")"
+  | Neg n -> "-(" ^ string_of n ^ ")"
 
 (*
   How should we _interpret_ (i.e. give meaning to) an expression?
