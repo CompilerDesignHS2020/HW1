@@ -989,9 +989,6 @@ let rec lookup (x:string) (c:ctxt) : int64 =
   gradedtests.ml.
 *)
 
-let c_noah: ctxt = [("x", 5L); ("gitter", 7L); ("x", 3L)]
-let e_noah: exp =  Mult(Add(Add(Add( Mult(Const 2L, Mult(Const 5L, Neg(Const 2L))), Var("x")), Var("x")), Var("gitter")),Var("ass_and_titties"))
-
 let rec interpret (c:ctxt) (e:exp) : int64 =
   match e with
   | Var v -> lookup v c
@@ -1045,8 +1042,69 @@ let rec interpret (c:ctxt) (e:exp) : int64 =
 *)
 
 let rec optimize (e:exp) : exp =
-  failwith "optimize unimplemented"
+  begin match e with
+    (* Already optimized *)
+    | Var v -> Var(v)
+    | Const c -> Const(c)
 
+    (* optimize const + const *)
+    | Add (Const(c1), Const(c2)) -> Const (Int64.add c1 c2)
+    (* optimize 0 + x *)
+    | Add (a1, Const(0L)) -> optimize a1
+    | Add (Const(0L), a2) -> optimize a2
+    (* optimize arguments; if it then matches to one of the categories above optimize it accordingly*)
+    | Add (a1, a2) -> let optimized_add = Add (optimize a1, optimize a2) in
+      begin match optimized_add with 
+        (* optimize const + const *)
+        | Add (Const(c1), Const(c2)) -> Const (Int64.add c1 c2)
+        (* optimize 0 + x *)
+        | Add (a1, Const(0L)) -> optimize a1
+        | Add (Const(0L), a2) -> optimize a2
+        (* if Add could not be optimized any further, leave it as it is *)
+        | _ -> optimized_add
+      end
+    (* optimize const * const *)
+    | Mult (Const(c1), Const(c2)) -> Const(Int64.mul c1 c2)
+    (* optimize 0 * x *)
+    | Mult (Const(0L), m2) -> Const(0L)
+    | Mult (m2, Const(0L)) -> Const(0L)
+    (* optimize 1 * x *)
+    | Mult (Const(1L), m2) -> optimize m2
+    | Mult (m1, Const(1L)) -> optimize m1
+    (* optimize -x * -y *) 
+    | Mult (Neg(m1), Neg(m2)) -> optimize (Mult(optimize m1, optimize m2))
+    (* optimize arguments; if it then matches to one of the categories above optimize it accordingly*)
+    | Mult (m1, m2) -> let optimized_mult = Mult(optimize m1, optimize m2) in
+      begin match optimized_mult with
+        (* optimize const * const *)
+        | Mult (Const(c1), Const(c2)) -> Const(Int64.mul c1 c2)
+        (* optimize 0 * x *)
+        | Mult (Const(0L), m2) -> Const(0L)
+        | Mult (m2, Const(0L)) -> Const(0L)
+        (* optimize 1 * x *)
+        | Mult (Const(1L), m2) -> optimize m2
+        | Mult (m1, Const(1L)) -> optimize m1
+        (* optimize -x * -y *) 
+        | Mult (Neg(m1), Neg(m2)) -> optimize (Mult(optimize m1, optimize m2))
+        (* if Mult could not be optimized any further, leave it as it is *)
+        |  _ -> optimized_mult
+      end
+
+    (* optimize -constant *)
+    | Neg Const(c) -> Const(Int64.neg c)
+    (* optimize --x *)
+    | Neg Neg(c) -> optimize c
+    (* optimize arguments *)
+    | Neg n -> let optimized_neg = Neg(optimize n) in
+      begin match optimized_neg with
+        (* optimize -constant *)
+        | Neg Const(c) -> Const(Int64.neg c)
+        (* optimize --x *)
+        | Neg Neg(c) -> optimize c
+        (* if Neg could not be optimized any further, leave it as it is *)
+        | _ -> optimized_neg
+      end
+  end
 
 (******************************************************************************)
 (*                                                                            *)
@@ -1130,7 +1188,7 @@ let rec execute (c:ctxt) (s:stack) (p:program) : stack =
 
 (*
   If you want to be slick, you can write the above equivalently using
-  List.fold_left (which is tail recrusive and hence iterative):
+  List.fold_left (which is tail recursive and hence iterative):
 *)
 let execute' (c:ctxt) = List.fold_left (step c)
 
