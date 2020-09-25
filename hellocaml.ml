@@ -417,7 +417,7 @@ let pair_of_triples: (int * bool * string) * (int * bool * string) =
     ...
   end
 
-  This evaluates exp until it reaches a value.  Then, that value is
+  This evaluates exp so it reaches a value.  Then, that value is
   'matched' against the patterns pat1, pat2, etc. until a match is
   found.  When the first match is found, the variables appearing in
   the pattern are bound to the corresponding parts of the value and
@@ -1247,7 +1247,12 @@ let ans1 = run [] p1
    - You should test the correctness of your compiler on several examples.
 *)
 let rec compile (e:exp) : program =
-  failwith "compile unimplemented"
+  match e with 
+  | Const c -> [IPushC c]
+  | Var v -> [IPushV v]
+  | Add(a1, a2) -> (compile a1)@(compile a2)@[IAdd]
+  | Mult(m1, m2) -> (compile m1)@(compile m2)@[IMul]
+  | Neg(n) -> (compile n)@[INeg]
 
 
 
@@ -1266,4 +1271,3 @@ let rec compile (e:exp) : program =
   extensive use of unions, lists, strings, ints, and a few List and Printf
   library functions, but otherwise it should be fairly readable to you already...
 *)
-
