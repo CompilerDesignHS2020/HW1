@@ -958,7 +958,12 @@ let ctxt2 : ctxt = [("x", 2L); ("y", 7L)]  (* maps "x" to 2L, "y" to 7L *)
   such value, it should raise the Not_found exception.
 *)
 let rec lookup (x:string) (c:ctxt) : int64 =
-  failwith "unimplemented"
+  match c with
+  | [] -> raise Not_found
+  | h::tl -> let (name, value) = h in
+    if name = x then value else lookup x tl
+
+
 
 
 (*
@@ -984,8 +989,17 @@ let rec lookup (x:string) (c:ctxt) : int64 =
   gradedtests.ml.
 *)
 
+let c_noah: ctxt = [("x", 5L); ("gitter", 7L); ("x", 3L)]
+let e_noah: exp =  Mult(Add(Add(Add( Mult(Const 2L, Mult(Const 5L, Neg(Const 2L))), Var("x")), Var("x")), Var("gitter")),Var("ass_and_titties"))
+
 let rec interpret (c:ctxt) (e:exp) : int64 =
-  failwith "unimplemented"
+  match e with
+  | Var v -> lookup v c
+  | Const c -> c
+  | Add (a1, a2) -> Int64.add (interpret c a1) (interpret c a2)
+  | Mult (m1, m2) -> Int64.mul (interpret c m1) (interpret c m2)
+  | Neg n -> Int64.neg (interpret c n)
+
 
 
 (*
