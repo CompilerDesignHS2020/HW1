@@ -1,4 +1,17 @@
-#use "hellocaml.ml";;
-let ctxt3 = [("x",5L);("y",3L);("gitterer",9L)];;
-run ctxt3 (compile (optimize  (Neg(Add(Var "x", Mult(Var "gitterer", Const 2L)))) ));;
-#quit;;
+let foo1 x = x+x;;
+
+let foo2 x:int = x+x;;
+
+let foo3 = fun x -> x+x;; 
+
+let foo4 : int->int = fun x -> x+x;;
+
+let foo5 : int->int = fun x:int -> x+x;; 
+
+let foo6 = function x -> x+x;; 
+
+let foo7 : int->int = function x -> x+x;; 
+
+let foo8 x = function y -> y + x;;
+
+foo8 2 4;;
